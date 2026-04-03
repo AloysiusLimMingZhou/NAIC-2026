@@ -1,0 +1,15 @@
+# Environments
+.venv
+.idea
+/.idea
+
+# Model Weights & Metrics
+*.pth
+
+# Dataset
+/dataset/image
+*.csv
+
+# Secrets
+*.env
+/env
