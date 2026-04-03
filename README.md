@@ -106,9 +106,9 @@ You need to change:
 | Model          | Import                               | from_pretrained()                            |
 |----------------|--------------------------------------|----------------------------------------------|
 | ViT (baseline) | `ViTForImageClassification`          | `"google/vit-base-patch16-224"`              |
-| Swin V2        | `SwinForImageClassification`         | `"microsoft/swinv2-tiny-patch4-window8-256"` |
-| ConvNeXt V2    | `ConvNextForImageClassification`     | `"facebook/convnextv2-tiny-1k-224"`          |
-| EfficientNet   | `EfficientNetForImageClassification` | `"google/efficientnet-b2"`                   |
+| Swin V2        | `Swinv2ForImageClassification`       | `"microsoft/swinv2-base-patch4-window8-256"` |
+| ConvNeXt V2    | `ConvNextForImageClassification`     | `"facebook/convnextv2-base-1k-224"`          |
+| EfficientNet   | `EfficientNetForImageClassification` | `"google/efficientnet-b7"`                   |
 
 ---
 
