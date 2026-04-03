@@ -210,8 +210,8 @@ repo/
 │
 ├── model.ipynb
 ├── README.md
-├── metrics.json
-├── config.json
+├── metrics.json (best version)
+├── config.json  (best version)
 ```
 
 Your README should include:
