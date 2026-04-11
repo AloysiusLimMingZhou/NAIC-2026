@@ -145,7 +145,7 @@ processor = AutoImageProcessor.from_pretrained('facebook/convnext-small-224')
 
 ## 🚀 6. Priority Ranking — What To Actually Implement First
 
-Given Kaggle T4 GPU, ~4,939 images, competition timeline, here is the honest order of effort vs. reward:
+Given GCP L4 GPU, ~4,939 images, competition timeline, here is the honest order of effort vs. reward:
 
 | Priority | Action                                              | Why                                                     | Estimated F1 Gain |
 |:--------:|-----------------------------------------------------|---------------------------------------------------------|-------------------|
