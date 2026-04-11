@@ -23,8 +23,8 @@ repo/
 │       ├── metrics.json
 │       ├── config.json
 │
-├── baseline_training.ipynb        # CUDA (Windows/Linux)
-├── baseline_training_macos.ipynb  # Apple Silicon (MPS)
+├── baseline_training.ipynb          # Standard training (CUDA)
+├── baseline_training_advanced.ipynb # Advanced training — adds Focal Loss + Three-Stage Fine-Tuning (CUDA)
 │
 ├── .gitignore
 ├── README.md
@@ -44,35 +44,22 @@ cd NAIC-2026
 
 ### 🔹 Step 2: Choose the correct notebook
 
-| Device            | Notebook                        |
-|-------------------|---------------------------------|
-| NVIDIA GPU (CUDA) | `baseline_training.ipynb`       |
-| Mac (M1/M2/M3/M4) | `baseline_training_macos.ipynb` |
+| Notebook                           | Implementations                                                                                    |
+|------------------------------------|-----------------------------------------------------------------------------------------------------|
+| `baseline_training.ipynb`          | Optimizers, LR Scheduler, EarlyStopping, Stratified 5-Fold, WeightedRandomSampler, CLAHE, Retina Cropping |
+| `baseline_training_advanced.ipynb` | Everything above + Weighted Focal Loss (γ=2) + Three-Stage Fine-Tuning + Discriminative LR          |
 
 ---
 
 ### 🔹 Step 3: Install dependencies
 
-Run Cell 1 in the notebook.
+Run Cell 1 in the notebook. Only run once as it'll be installed inside the VM OS boot disk and will not be removed even after server restart
 
 ---
 
-### 🔹 Step 4: Hugging Face Login (Optional)
+### 🔹 Step 4: Download Dataset from Storage Bucket into Jupyter Server
 
-In **Cell 2**, you will see:
-
-```python
-from huggingface_hub import notebook_login
-notebook_login()
-```
-
-👉 Step by step to run this cell:
-
-1. Go to https://huggingface.co/settings/tokens
-2. Create an access token (⚠️ **Do not Share it to anyone or push to GitHub**)
-3. Paste it into the notebook prompt UI
-
-This part is optional as you're still able to access huggingface API without authentication, just that there's stricter rate limiting. If you have not faced any rate limiting issues can comment out or delete this cell
+Run **Cell 2** in the notebook, and it will download the dataset into the VM OS boot disk. This is to reduce Storage Bucket Read/Write cost and latency. Only run once or it'll re-download the 4939 dataset
 
 ---
 
@@ -81,7 +68,8 @@ This part is optional as you're still able to access huggingface API without aut
 The pipeline will:
 
 * Load dataset
-* Train model
+* Apply CLAHE preprocessing & retina cropping
+* Train model with Stratified 5-Fold + WeightedRandomSampler
 * Save results into `/experiments/`
 
 ---
@@ -90,18 +78,17 @@ The pipeline will:
 
 Each teammate is assigned a strong model:
 
-| Teammate | Model               |
-|----------|---------------------|
-| Yi Hui   | Swin Transformer V2 |
-| Weng Wai | ConvNeXt V2         |
-| Jovan    | EfficientNet        |
-| Aloysius | Vision Transformer  |
+| Teammate                 | Model                                     |
+|--------------------------|-------------------------------------------|
+| Yi Hui                   | ConvNext-Small                            |
+| Aloysius                 | EfficientNet-B3                           |
+| Additional (if got time) | EfficientNet-B4, Swin-TransformerV2-Small |
 
 👉 You are also **free to explore other models** if you believe they perform better.
 
 ---
 
-## 🧠 4. How to Change Model (Cell 6)
+## 🧠 4. How to Change Model (Cell 8)
 
 You need to change:
 
@@ -114,10 +101,8 @@ You need to change:
 
 | Model          | Import Name                          | <Import Name>.from_pretrained() & AutoImageProcessor.from_pretrained() |
 |----------------|--------------------------------------|------------------------------------------------------------------------|
-| ViT (baseline) | `ViTForImageClassification`          | `"google/vit-base-patch16-224"`                                        |
-| Swin V2        | `Swinv2ForImageClassification`       | `"microsoft/swinv2-base-patch4-window8-256"`                           |
-| ConvNeXt V2    | `ConvNextForImageClassification`     | `"facebook/convnextv2-base-1k-224"`                                    |
-| EfficientNet   | `EfficientNetForImageClassification` | `"google/efficientnet-b7"`                                             |
+| ConvNeXt V2    | `ConvNextForImageClassification`     | `"facebook/convnext-small-224"`                                        |
+| EfficientNet   | `EfficientNetForImageClassification` | `"google/efficientnet-b3"`                                             |
 
 ---
 
@@ -127,11 +112,11 @@ You need to change:
 from transformers import SwinForImageClassification, AutoImageProcessor
 
 model = SwinForImageClassification.from_pretrained(
-    "microsoft/swinv2-tiny-patch4-window8-256",
+    "facebook/convnext-small-224",
     num_labels=5
 )
 
-processor = AutoImageProcessor.from_pretrained('microsoft/swinv2-tiny-patch4-window8-256')
+processor = AutoImageProcessor.from_pretrained('facebook/convnext-small-224')
 ```
 
 **Note:** The model is loaded from **Huggingface**. If you want to explore other models or you think there's typo in the model name, please check out at https://huggingface.co/.
@@ -158,46 +143,22 @@ processor = AutoImageProcessor.from_pretrained('microsoft/swinv2-tiny-patch4-win
 
 ---
 
-## 🚀 6. Ways to Improve Performance
+## 🚀 6. Priority Ranking — What To Actually Implement First
 
-Here are recommended strategies:
+Given Kaggle T4 GPU, ~4,939 images, competition timeline, here is the honest order of effort vs. reward:
 
----
-
-### a) 🔬 Dataset Splitting
-
-* Add Stratified K-Fold using scikit-learn library
-* Ensure Fairness dataset distribution between training, validation & testing
-
----
-
-### b) ⚙️ Hyperparameter Tuning
-
-* Learning rate (e.g., `1e-4`, `3e-5`)
-* Batch size (Recommended: `4`, `8`, `16`, `32`)
-* Number of epochs (e.g., `10`, `15`, `20`)
-
----
-
-### c) 🧠 Model Improvements
-
-* Add custom classification head
-* Fine-tune deeper layers
-
----
-
-### d) 🧪 Data Augmentation
-
-* Add Pytorch Data Augmentation (i.e.: `transforms.RandomHorizontalFlip()`, `transforms.ColorJitter()`, `transforms.RandomRotation()`)
-* Add CutMix / MixUp
-* Implement Stronger rotations / brightness (Adjust based on performance)
-
----
-
-### e) ⚖️ Imbalance Handling
-
-* Weighted sampling
-* Focal loss
+| Priority | Action                                              | Why                                                     | Estimated F1 Gain |
+|:--------:|-----------------------------------------------------|---------------------------------------------------------|-------------------|
+|    1     | Stratified 5-Fold + WeightedRandomSampler           | Fixes the imbalance problem at source                   | +0.08–0.12        |
+|    2     | Green channel CLAHE + retina cropping               | Preprocessing ROI is highest data ROI                   | +0.04–0.06        |
+|    3     | Weighted Focal Loss (γ=2)                           | Directly targets Class 3 recall                         | +0.04–0.08        |
+|    4     | Three-stage fine-tuning + discriminative LR         | Prevents catastrophic forgetting                        | +0.03–0.05        |
+|    5     | EfficientNet-B3 + ConvNeXt-Small ensemble (0.6/0.4) | Architectural diversity drives real gains               | +0.02–0.04        |
+|    6     | CBAM attention module                               | Better classification + cleaner Grad-CAM for demo marks | +0.02–0.03        |
+|    7     | 8-augmentation TTA at inference                     | Free recall boost, no retraining needed                 | +0.01–0.02        |
+|    8     | Snapshot ensemble (best checkpoint per fold)        | Free — you already have the checkpoints                 | +0.01–0.02        |
+|    9     | Severity-aware MixUp (±1 class only)                | Genuine minority class variety                          | +0.02–0.03        |
+|    10    | Ordinal penalty on loss                             | Clinically meaningful error weighting                   | +0.02–0.04        |
 
 ---
 
@@ -266,7 +227,6 @@ We will follow a structure similar to **OpenAI parameter-golf style** (https://g
 ```
 records/
 │
-├── 2026-04-09_swinv2_{strategy}/
 ├── 2026-04-10_convnext_{strategy}/
 ├── 2026-04-12_efficientnet_{strategy}/
 ```
@@ -279,7 +239,7 @@ records/
 |----|----------|--------------------|------------------------------------------------------------|:--------:|:------:|--------|
 | 1. | Aloysius | Vision Transformer | Baseline (Vanila ViT + No Augmentation + Train_Test_Split) |  74.19%  | 58.78% | 4/4/26 |
 
-# 🚀 Let’s Win This Competition
+# 🚀 Let's Win This Competition
 
 Focus on:
 
