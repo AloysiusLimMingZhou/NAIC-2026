@@ -44,22 +44,22 @@ cd NAIC-2026
 
 ### 🔹 Step 2: Choose the correct notebook
 
-| Notebook                           | Implementations                                                                                    |
-|------------------------------------|-----------------------------------------------------------------------------------------------------|
+| Notebook                           | Implementations                                                                                           |
+|------------------------------------|-----------------------------------------------------------------------------------------------------------|
 | `baseline_training.ipynb`          | Optimizers, LR Scheduler, EarlyStopping, Stratified 5-Fold, WeightedRandomSampler, CLAHE, Retina Cropping |
-| `baseline_training_advanced.ipynb` | Everything above + Weighted Focal Loss (γ=2) + Three-Stage Fine-Tuning + Discriminative LR          |
+| `baseline_training_advanced.ipynb` | Everything above + Weighted Focal Loss (γ=2) + Three-Stage Fine-Tuning + Discriminative LR                |
 
 ---
 
 ### 🔹 Step 3: Install dependencies
 
-Run Cell 1 in the notebook. Only run once as it'll be installed inside the VM OS boot disk and will not be removed even after server restart
+Run Cell 1 in the notebook. Only run once unless new package is needed as it'll be installed inside the VM OS boot disk and will not be removed even after server restart
 
 ---
 
 ### 🔹 Step 4: Download Dataset from Storage Bucket into Jupyter Server
 
-Run **Cell 2** in the notebook, and it will download the dataset into the VM OS boot disk. This is to reduce Storage Bucket Read/Write cost and latency. Only run once or it'll re-download the 4939 dataset
+Run **Cell 2** in the notebook, and it will download the dataset into the VM OS boot disk. This is to reduce Storage Bucket Read/Write cost and latency. 
 
 ---
 
