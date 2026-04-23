@@ -1,0 +1,11 @@
+{
+    "model_name": "google/efficientnet-b3",
+    "learning_rate_base": 5e-06,
+    "weight_decay": 0.0001,
+    "eta_min_base": 1e-06,
+    "epochs": 20,
+    "batch_size": 32,
+    "label_smoothing": 0.1,
+    "optimizer": "AdamW",
+    "scheduler": "CosineAnnealingLR"
+}
