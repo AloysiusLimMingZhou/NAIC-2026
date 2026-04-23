@@ -1,0 +1,195 @@
+{
+    "config": {
+        "model_name": "google/efficientnet-b3",
+        "learning_rate": 0.001,
+        "lr_early": 1e-05,
+        "lr_middle": 0.0001,
+        "weight_decay": 0.0001,
+        "eta_min": 1e-06,
+        "warmup_epochs": 3,
+        "epochs": 20,
+        "batch_size": 32,
+        "optimizer": "AdamW",
+        "scheduler": "CosineAnnealingLR",
+        "focal_gamma": 2.0,
+        "focal_weight": 0.7,
+        "ordinal_weight": 0.3,
+        "label_smoothing": 0.1,
+        "mixup_alpha": 0.4,
+        "stage1_epochs": 3,
+        "stage2_lr": 0.0001,
+        "stage3_lr": 1e-06,
+        "stage2_duration": 3,
+        "feature_flags": {
+            "use_label_smoothing": false,
+            "use_focal_loss": true,
+            "use_ordinal_loss": true,
+            "use_mixup": false,
+            "use_three_stage": true,
+            "use_warmup": false,
+            "use_discriminative_lr": false,
+            "use_tta": true,
+            "use_cbam": false,
+            "use_eca": false
+        },
+        "augmentation_pipeline": [
+            "Resize: Resize(size=(300, 300), interpolation=bilinear, max_size=None, antialias=True)",
+            "RandomHorizontalFlip: RandomHorizontalFlip(p=0.5)",
+            "RandomVerticalFlip: RandomVerticalFlip(p=0.5)",
+            "RandomRotation: RandomRotation(degrees=[-15.0, 15.0], interpolation=nearest, expand=False, fill=0)",
+            "ColorJitter: ColorJitter(brightness=(0.8, 1.2), contrast=(0.8, 1.2), saturation=(0.8, 1.2), hue=None)",
+            "ToTensor: ToTensor()",
+            "Normalize: Normalize(mean=(0.485, 0.456, 0.406), std=(0.47853944, 0.4732864, 0.47434163))",
+            "RandomErasing: RandomErasing(p=0.3, scale=(0.02, 0.15), ratio=(0.3, 3.3), value=0, inplace=False)"
+        ],
+        "loss": "FocalLoss + OrdinalPenalty",
+        "attention": "None",
+        "schedule": "CosineAnnealing + 3StageUnfreeze"
+    },
+    "epoch_metrics": [
+        {
+            "fold": 4,
+            "epoch": 19,
+            "train_loss": 0.24842974610511204,
+            "val_loss": 0.3971697135062157,
+            "train_acc": 0.7428029104713698,
+            "val_acc": 0.6227848101265823,
+            "val_f1": 0.5028964544007293,
+            "learning_rate": 1e-06
+        }
+    ],
+    "final_metrics": {
+        "validation_fold_5": {
+            "accuracy": 0.6227848101265823,
+            "precision": 0.6062320301057007,
+            "recall": 0.5104873893404948,
+            "f1_score": 0.5028964544007293,
+            "roc_auc_score": 0.862259925476461,
+            "confusion_matrix": [
+                [
+                    254,
+                    95,
+                    8,
+                    0,
+                    1
+                ],
+                [
+                    14,
+                    46,
+                    20,
+                    0,
+                    4
+                ],
+                [
+                    2,
+                    53,
+                    139,
+                    1,
+                    26
+                ],
+                [
+                    0,
+                    1,
+                    13,
+                    5,
+                    17
+                ],
+                [
+                    0,
+                    8,
+                    34,
+                    1,
+                    48
+                ]
+            ]
+        },
+        "test_ensemble_tta": {
+            "accuracy": 0.7226720647773279,
+            "precision": 0.736569742554883,
+            "recall": 0.5709302634869088,
+            "f1_score": 0.5741323817686455,
+            "roc_auc_score": 0.8989570393221191,
+            "confusion_matrix": [
+                [
+                    387,
+                    57,
+                    4,
+                    0,
+                    0
+                ],
+                [
+                    12,
+                    67,
+                    25,
+                    0,
+                    1
+                ],
+                [
+                    9,
+                    60,
+                    196,
+                    0,
+                    12
+                ],
+                [
+                    0,
+                    4,
+                    26,
+                    6,
+                    8
+                ],
+                [
+                    6,
+                    13,
+                    37,
+                    0,
+                    58
+                ]
+            ]
+        },
+        "test_standard": {
+            "accuracy": 0.6356275303643725,
+            "precision": 0.6021034709600779,
+            "recall": 0.5134098399304794,
+            "f1_score": 0.5013058208484079,
+            "roc_auc_score": 0.8629988820064576,
+            "confusion_matrix": [
+                [
+                    335,
+                    92,
+                    18,
+                    0,
+                    3
+                ],
+                [
+                    9,
+                    55,
+                    34,
+                    0,
+                    7
+                ],
+                [
+                    6,
+                    58,
+                    167,
+                    1,
+                    45
+                ],
+                [
+                    0,
+                    1,
+                    22,
+                    5,
+                    16
+                ],
+                [
+                    5,
+                    14,
+                    28,
+                    1,
+                    66
+                ]
+            ]
+        }
+    }
+}
