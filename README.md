@@ -169,14 +169,14 @@ Results saved to: ensemble_results/ensemble_<timestamp>.json
 
 ### Step 6.0 — Verify the best strategy
 - Inside your Jupyter Server, every time you've run the notebook, the result metrics will be saved in json files. 
-- Make sure every time you've run an experiment, create a folder and named it as exp_1_results, exp_2_results, ... and save the 'ensemble_results/ensemble_{timestamp}.json' in the corresponding folder.
+- Make sure every time you've run an experiment, rename the metrics: 'ensemble_results/ensemble_{timestamp}.json' into 'exp_1_metrics.json', 'exp_2_metrics.json', 'exp_3_metrics.json', etc.
 
-### Step 6.1 — Download all the experiment metrics
-In each experiment, find 'ensemble_results/ensemble_{timestamp}.json' and right click the file, find the Download button (down arrow icon) in the JupyterLab toolbar to download the files to your local machine.
+### Step 6.1 — Download all the metrics
+In each experiment metrics file, right click the file, find the Download button (down arrow icon) in the JupyterLab toolbar to download the files to your local machine.
 
 ### Step 6.2 — Navigate to the Project Folder in your VS Code
 - Once you've downloaded the files, open VS Code and navigate to the project folder. 
-- Then, move the downloaded metrics json files to the 'ensemble_results' folder in your local machine. 
+- Then, move the downloaded metrics json files to the github repository. 
 - Then, open a new terminal.
 
 ### Step 6.3 — Check What Has Changed
