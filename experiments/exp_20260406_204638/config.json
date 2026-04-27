@@ -1,0 +1,15 @@
+{
+    "model": "microsoft/swinv2-small-patch4-window8-256",
+    "learning_rate": 2e-05,
+    "weight_decay": 0.0001,
+    "epochs": 20,
+    "batch_size": 16,
+    "optimizer": "AdamW",
+    "scheduler": "CosineAnnealingLR",
+    "loss": "FocalLoss",
+    "focal_gamma": 1.0,
+    "label_smoothing": 0.1,
+    "k_folds": 5,
+    "augmentation": "HFlip+VFlip+Rotation15+ColorJitter",
+    "sampler": "WeightedRandomSampler"
+}
