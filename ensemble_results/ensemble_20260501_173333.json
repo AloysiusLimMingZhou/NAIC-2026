@@ -1,0 +1,275 @@
+{
+  "timestamp": "20260501_173333",
+  "ensemble_flags": {
+    "strategy": "all",
+    "use_tta": true,
+    "use_efficientnet": true,
+    "use_convnext": true,
+    "effnet_attention": "eca",
+    "convnext_attention": "eca",
+    "convnext_weight": 0.6,
+    "efficientnet_weight": 0.4,
+    "per_class_weights": {
+      "convnext": [
+        0.4,
+        0.65,
+        0.5,
+        0.6,
+        0.55
+      ],
+      "efficientnet": [
+        0.6,
+        0.35,
+        0.5,
+        0.4,
+        0.45
+      ]
+    }
+  },
+  "model_paths": {
+    "efficientnet": {
+      "hf_model_name": "google/efficientnet-b3",
+      "weights_dir": "efficientnetb3_best_weights/",
+      "weight_pattern": "best_model_fold_{fold}.pth",
+      "img_size": 300,
+      "num_folds": 5
+    },
+    "convnext": {
+      "hf_model_name": "facebook/convnext-small-224",
+      "weights_dir": "convnext_best_weights/",
+      "weight_pattern": "best_model_fold_{fold}.pth",
+      "img_size": 224,
+      "feature_dim": 768,
+      "num_folds": 5
+    }
+  },
+  "results": {
+    "simple_avg": {
+      "Accuracy": 0.8309716599190283,
+      "Precision": 0.7255888863442921,
+      "Recall": 0.7658446339429145,
+      "F1": 0.7358543754691274,
+      "AUC": 0.9616217197068592,
+      "ConfusionMatrix": [
+        [
+          438,
+          9,
+          1,
+          0,
+          0
+        ],
+        [
+          11,
+          69,
+          19,
+          1,
+          5
+        ],
+        [
+          8,
+          22,
+          195,
+          32,
+          20
+        ],
+        [
+          0,
+          0,
+          9,
+          32,
+          3
+        ],
+        [
+          0,
+          2,
+          12,
+          13,
+          87
+        ]
+      ]
+    },
+    "weighted_avg": {
+      "Accuracy": 0.8279352226720648,
+      "Precision": 0.7228119012918818,
+      "Recall": 0.7663192616016576,
+      "F1": 0.7323949385217021,
+      "AUC": 0.9612913452212191,
+      "ConfusionMatrix": [
+        [
+          438,
+          9,
+          1,
+          0,
+          0
+        ],
+        [
+          11,
+          68,
+          20,
+          1,
+          5
+        ],
+        [
+          8,
+          20,
+          192,
+          35,
+          22
+        ],
+        [
+          0,
+          0,
+          8,
+          33,
+          3
+        ],
+        [
+          0,
+          2,
+          11,
+          14,
+          87
+        ]
+      ]
+    },
+    "per_class_weighted": {
+      "Accuracy": 0.8299595141700404,
+      "Precision": 0.7259335602130362,
+      "Recall": 0.7677633049229573,
+      "F1": 0.7354742644074342,
+      "AUC": 0.9610675458820139,
+      "ConfusionMatrix": [
+        [
+          438,
+          9,
+          1,
+          0,
+          0
+        ],
+        [
+          11,
+          68,
+          20,
+          1,
+          5
+        ],
+        [
+          9,
+          20,
+          194,
+          33,
+          21
+        ],
+        [
+          0,
+          0,
+          8,
+          33,
+          3
+        ],
+        [
+          0,
+          2,
+          11,
+          14,
+          87
+        ]
+      ]
+    },
+    "majority_vote": {
+      "Accuracy": 0.812753036437247,
+      "Precision": 0.703199200456413,
+      "Recall": 0.7645689770043751,
+      "F1": 0.7159785404595489,
+      "AUC": 0.9611416428071717,
+      "ConfusionMatrix": [
+        [
+          436,
+          11,
+          1,
+          0,
+          0
+        ],
+        [
+          8,
+          67,
+          22,
+          1,
+          7
+        ],
+        [
+          6,
+          21,
+          176,
+          41,
+          33
+        ],
+        [
+          0,
+          0,
+          6,
+          35,
+          3
+        ],
+        [
+          0,
+          1,
+          9,
+          15,
+          89
+        ]
+      ]
+    },
+    "rank_fusion": {
+      "Accuracy": 0.8370445344129555,
+      "Precision": 0.7374457174448894,
+      "Recall": 0.765922089540392,
+      "F1": 0.7453858907251565,
+      "AUC": 0.9326554425904865,
+      "ConfusionMatrix": [
+        [
+          439,
+          8,
+          1,
+          0,
+          0
+        ],
+        [
+          13,
+          70,
+          17,
+          1,
+          4
+        ],
+        [
+          10,
+          28,
+          204,
+          20,
+          15
+        ],
+        [
+          0,
+          0,
+          10,
+          32,
+          2
+        ],
+        [
+          0,
+          5,
+          13,
+          14,
+          82
+        ]
+      ]
+    }
+  },
+  "best_by_metric": {
+    "Accuracy": "rank_fusion",
+    "Precision": "rank_fusion",
+    "Recall": "per_class_weighted",
+    "F1": "rank_fusion",
+    "AUC": "simple_avg"
+  }
+}
