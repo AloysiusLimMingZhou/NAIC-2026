@@ -1,252 +1,272 @@
-# 🧠 Diabetic Retinopathy Classification – Team Training Pipeline
+# Ensemble Model Run Guide
+### ConvNeXt-Small (Exp 7) + EfficientNet-B3 (Exp 5) → Break 80% Accuracy
 
-This repository contains the baseline pipeline for training deep learning models on a **Diabetic Retinopathy (DR) severity classification dataset**.
-
-The goal is to:
-
-> 🚀 Improve the baseline model performance using better architectures, preprocessing, and training strategies.
+**What to do:** Start the cloud server → access Jupyter → configure paths → run all 5 strategies → record and push results.  
+**Estimated time:** ~30–45 minutes (most of it is GPU inference, not manual work).
 
 ---
 
-## 1. 📁 Project Structure
+## Part 1 — Set Up the Git Repository
 
-```
-repo/
-│
-├── dataset/                  # (gitignored) Images + labels.csv
-│
-├── records/                  # records folder to log everyone's best performing model attempts from time to time
-│
-├── experiments/              # (gitignored)
-│   └── exp_datetime/
-│       ├── best_model.pth
-│       ├── metrics.json
-│       ├── config.json
-│
-├── baseline_training.ipynb          # Standard training (CUDA)
-├── baseline_training_advanced.ipynb # Advanced training — adds Focal Loss + Three-Stage Fine-Tuning (CUDA)
-│
-├── .gitignore
-├── README.md
-```
+All of this is done inside a **Terminal** in Windows.
 
----
+### Step 1.1 — Open a Terminal
+Do `ctrl + r` to and enter powershell to open a powershell in Windows.
 
-## 2. ⚙️ How to Run the Training Script
+### Step 1.2 — Navigate to the Project Folder
 
-### 🔹Step 1: Clone the Dependencies
+> **Clone the repo first**
+> ```bash
+> git clone https://github.com/AloysiusLimMingZhou/NAIC-2026.git
+> cd NAIC-2026
+> ```
+
+### Step 1.3 — Set Your Git Identity (first time only)
+If you've never committed from this server before:
 ```bash
-git clone https://github.com/AloysiusLimMingZhou/NAIC-2026.git
-cd NAIC-2026
+git config user.name "Your Name"
+git config user.email "your-email@example.com"
 ```
 
----
-
-### 🔹 Step 2: Choose the correct notebook
-
-| Notebook                           | Implementations                                                                                           |
-|------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| `baseline_training.ipynb`          | Optimizers, LR Scheduler, EarlyStopping, Stratified 5-Fold, WeightedRandomSampler, CLAHE, Retina Cropping |
-| `baseline_training_advanced.ipynb` | Everything above + Weighted Focal Loss (γ=2) + Three-Stage Fine-Tuning + Discriminative LR                |
-
----
-
-### 🔹 Step 3: Install dependencies
-
-Run Cell 1 in the notebook. Only run once unless new package is needed as it'll be installed inside the VM OS boot disk and will not be removed even after server restart
-
----
-
-### 🔹 Step 4: Download Dataset from Storage Bucket into Jupyter Server
-
-Run **Cell 2** in the notebook, and it will download the dataset into the VM OS boot disk. This is to reduce Storage Bucket Read/Write cost and latency. 
-
----
-
-### 🔹 Step 5: Run all cells
-
-The pipeline will:
-
-* Load dataset
-* Apply CLAHE preprocessing & retina cropping
-* Train model with Stratified 5-Fold + WeightedRandomSampler
-* Save results into `/experiments/`
-
----
-
-## 🤝 3. Teammate Model Assignments
-
-Each teammate is assigned a strong model:
-
-| Teammate                 | Model                                     |
-|--------------------------|-------------------------------------------|
-| Yi Hui                   | ConvNext-Small                            |
-| Aloysius                 | EfficientNet-B3                           |
-| Additional (if got time) | EfficientNet-B4, Swin-TransformerV2-Small |
-
-👉 You are also **free to explore other models** if you believe they perform better.
-
----
-
-## 🧠 4. How to Change Model (Cell 8)
-
-You need to change:
-
-1. **Import**
-2. **Model name in both `AutoImageProcessor.from_pretrained()` and `<Import Name>.from_pretrained()`**
-
----
-
-### 🔄 Model Conversion Table
-
-| Model          | Import Name                          | <Import Name>.from_pretrained() & AutoImageProcessor.from_pretrained() |
-|----------------|--------------------------------------|------------------------------------------------------------------------|
-| ConvNeXt V2    | `ConvNextForImageClassification`     | `"facebook/convnext-small-224"`                                        |
-| EfficientNet   | `EfficientNetForImageClassification` | `"google/efficientnet-b3"`                                             |
-
----
-
-### 🔧 Example (Swin V2)
-
-```python
-from transformers import SwinForImageClassification, AutoImageProcessor
-
-model = SwinForImageClassification.from_pretrained(
-    "facebook/convnext-small-224",
-    num_labels=5
-)
-
-processor = AutoImageProcessor.from_pretrained('facebook/convnext-small-224')
+### Step 1.4 — Fetch All Latest Branches
+```bash
+git fetch --all
 ```
 
-**Note:** The model is loaded from **Huggingface**. If you want to explore other models or you think there's typo in the model name, please check out at https://huggingface.co/.
+### Step 1.5 — Switch to the Ensemble Feature Branch
+```bash
+git checkout features/ensemble_model
+```
+
+Expected output:
+```
+Switched to branch 'features/ensemble_model'
+Your branch is up to date with 'origin/features/ensemble_model'.
+```
+
+> **If you see `error: pathspec 'features/ensemble_model' did not match`:**
+> ```bash
+> git checkout -b features/ensemble_model origin/features/ensemble_model
+> ```
+
+### Step 1.6 — Pull the Latest Changes
+```bash
+git pull origin features/ensemble_model
+```
+
+This downloads anything your teammates have already pushed to this branch.
+
+### Step 1.7 — Confirm Your Current Branch
+```bash
+git branch
+```
+
+The output should show `* features/ensemble_model` with an asterisk next to it. If it doesn't, something went wrong — go back to Step 1.5.
 
 ---
 
-## 📊 5. Baseline Performance (You MUST Beat This)
+## Part 2 — Start the Cloud Server
 
-| Metric        | Score  |
-|---------------|--------|
-| Accuracy      | 74.19% |
-| Precision     | 69.13% |
-| Recall        | 58.78% |
-| F1 Score      | 59.95% |
-| ROC_AUC Score | 78.91  |
+### Step 2.1 — Go to Discord
+Open Discord and navigate to the **#general** or **#notification** channel.
 
----
+### Step 2.2 — Start the VM
+Type the following command and press **Enter**:
 
-👉 Your improved model should aim to:
+```
+/VM-start
+```
 
-> 🎯 **Increase Recall Score (most important metric)**\
-> 🎯 **Increase Accuracy Score**\
-> 🎯 **Ensure Both Recall & Precision are high (Lead to higher and balance F1 Score)**
+Wait for the bot to reply. It will send a message confirming the VM is starting up. This usually takes **1 minute**.
 
----
+> **If the bot respond with an error message:** This usually means that the GCP server is busy and we can't access it. So just wait for 15-30 minutes and try restart. If its still erroring, tag someone to assist you.
 
-## 🚀 6. Priority Ranking — What To Actually Implement First
+### Step 2.3 — Wait for Confirmation
+The bot will send a message like:
+```
+✅ VM started! Your Jupyter server is ready
+```
 
-Given GCP L4 GPU, ~4,939 images, competition timeline, here is the honest order of effort vs. reward:
-
-| Priority | Action                                              | Why                                                     | Estimated F1 Gain |
-|:--------:|-----------------------------------------------------|---------------------------------------------------------|-------------------|
-|    1     | Stratified 5-Fold + WeightedRandomSampler           | Fixes the imbalance problem at source                   | +0.08–0.12        |
-|    2     | Green channel CLAHE + retina cropping               | Preprocessing ROI is highest data ROI                   | +0.04–0.06        |
-|    3     | Weighted Focal Loss (γ=2)                           | Directly targets Class 3 recall                         | +0.04–0.08        |
-|    4     | Three-stage fine-tuning + discriminative LR         | Prevents catastrophic forgetting                        | +0.03–0.05        |
-|    5     | EfficientNet-B3 + ConvNeXt-Small ensemble (0.6/0.4) | Architectural diversity drives real gains               | +0.02–0.04        |
-|    6     | CBAM attention module                               | Better classification + cleaner Grad-CAM for demo marks | +0.02–0.03        |
-|    7     | 8-augmentation TTA at inference                     | Free recall boost, no retraining needed                 | +0.01–0.02        |
-|    8     | Snapshot ensemble (best checkpoint per fold)        | Free — you already have the checkpoints                 | +0.01–0.02        |
-|    9     | Severity-aware MixUp (±1 class only)                | Genuine minority class variety                          | +0.02–0.03        |
-|    10    | Ordinal penalty on loss                             | Clinically meaningful error weighting                   | +0.02–0.04        |
+Then, you may go to this Jupyter Server URL: https://jupyter.chocorot.net/
 
 ---
 
-## 🧾 7. Contribution Workflow
+## Part 3 — Log Into the Jupyter Server
 
-### 🔹 Step 1: Create your own branch
+### Step 3.1 — Open the URL in Your Browser
+Paste the URL into your browser's address bar and press Enter.
+
+You'll see the **TLJH (The Littlest JupyterHub) login page**.
+
+### Step 3.2 — Log In
+Enter your credentials:
+
+| Field | Value |
+|---|---|
+| **Username** | *(the name your teammate assigned you)* |
+| **Password** | *(the password your teammate assigned you)* |
+
+Click **Sign in**.
+
+> **If login fails:** Make sure there are no spaces before/after your username. Passwords are case-sensitive.
+
+### Step 3.3 — You're In
+You should now see the **JupyterLab file browser** on the left. You're in your home directory on the cloud server.
+
+---
+
+## Part 4 — Upload the Notebook to the Server
+
+You need to upload `ensemble_ultimate_fixed.ipynb` from your **local machine** to the **correct folder** on the server.
+
+### Step 4.1 — Upload the File
+1. Click the **Upload** button — it looks like an **up arrow icon (↑)** in the file browser toolbar at the top.
+2. A file picker dialog opens on your computer.
+3. Find and select `ensemble_ultimate_fixed.ipynb` on your local machine.
+4. Click **Open**.
+
+The file will appear in the `naic-project/` folder in the sidebar.
+
+---
+
+## Part 5 — Run the Notebook
+
+### Step 5.1 — Run All Cells
+In the JupyterLab menu bar, click:
+
+```
+Kernel → Restart Kernel and Run All Cells...
+```
+
+A dialog box will appear asking **"Are you sure you want to restart the kernel and run all cells?"** — click **Restart**.
+
+> **Why restart first?** This clears any leftover variables from previous runs. Always restart before a full run to avoid stale state bugs.
+
+### Step 6.2 — Watch the Progress
+Cells run top to bottom. Each running cell shows `[*]` in the top-left corner. A completed cell shows a number like `[1]`, `[2]`, etc.
+
+Key cells and what to expect:
+
+| Cell | What it does | How long |
+|---|---|---|
+| Cell 1 | Installs pip packages | 1–3 min (skip if already installed) |
+| Cell 3 | Downloads dataset | Skip if images already on disk |
+| Cell 10 | Validates your flags | Instant — errors here mean bad config |
+| Cell 11 | Downloads HuggingFace processors | 30 sec |
+| Cell 13 | **Main inference** — loads all 10 fold models + runs 8-view TTA | **15–25 min** |
+| Cell 15 | Runs all 5 strategies | < 1 min |
+| Cell 16 | Prints comparison table + best strategy | Instant |
+| Cell 17 | Saves results to `ensemble_results/` | Instant |
+
+### Step 5.3 — Wait for Completion
+The full run takes **20–35 minutes** depending on GPU availability. The notebook is done when Cell 17 finishes and prints:
+
+```
+Results saved to: ensemble_results/ensemble_<timestamp>.json
+```
+
+## Part 6 — Save and Push Results to Git
+
+### Step 6.0 — Verify the best strategy
+- Inside your Jupyter Server, every time you've run the notebook, the result metrics will be saved in json files. 
+- Make sure every time you've run an experiment, rename the metrics: 'ensemble_results/ensemble_{timestamp}.json' into 'exp_1_metrics.json', 'exp_2_metrics.json', 'exp_3_metrics.json', etc.
+
+### Step 6.1 — Download all the metrics
+In each experiment metrics file, right click the file, find the Download button (down arrow icon) in the JupyterLab toolbar to download the files to your local machine.
+
+### Step 6.2 — Navigate to the Project Folder in your VS Code
+- Once you've downloaded the files, open VS Code and navigate to the project folder. 
+- Then, move the downloaded metrics json files to the github repository. 
+- Then, open a new terminal.
+
+### Step 6.3 — Check What Has Changed
+```bash
+git status
+```
+
+You should see output like:
+```
+On branch features/ensemble_model
+Changes not staged for commit:
+  modified:   ensemble_ultimate_fixed.ipynb
+
+Untracked files:
+  ensemble_results/ensemble_20260424_143022.json
+```
+
+### Step 6.4 — Stage All Changes
+```bash
+git add .
+```
+
+> **Tip:** Run `git status` again after staging to confirm all files are listed under "Changes to be committed" (shown in green).
+
+### Step 6.5 — Commit with a Descriptive Message
+Use this format so your teammates can read the history clearly:
 
 ```bash
-git checkout -b feature/swinv2-improvement
+git commit -m "feat(ensemble): run all 5 strategies, best=per_class_weighted 80.35% acc"
+```
+
+Replace the numbers with your actual results. Follow this format:
+```
+feat(ensemble): run all 5 strategies, best=<strategy_name> <accuracy>% acc
+```
+
+### Step 6.6 — Push to the Feature Branch
+```bash
+git push origin features/ensemble_model
+```
+
+Expected output:
+```
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (5/5), 1.23 MiB | 4.56 MiB/s, done.
+Total 5 (delta 2), reused 0 (delta 0), pack-reused 0
+To https://github.com/<your-org>/<your-repo>.git
+   a1b2c3d..e4f5g6h  features/ensemble_model -> features/ensemble_model
+```
+
+> **If push is rejected with `non-fast-forward` error:** Someone else pushed to the branch while you were working. Run:
+> ```bash
+> git pull origin features/ensemble_model --rebase
+> git push origin features/ensemble_model
+> ```
+
+### Step 7.6 — Confirm the Push
+```bash
+git log --oneline -5
+```
+
+Your commit should appear at the top of the list.
+
+---
+
+## Quick Reference — All Git Commands in Order
+
+```bash
+# ── Setup (once per server, skip if already done) ─────────────────
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+git clone https://github.com/<org>/<repo>.git naic-project
+
+# ── Every session ─────────────────────────────────────────────────
+cd ~/naic-project
+git fetch --all
+git checkout features/ensemble_model
+git pull origin features/ensemble_model
+
+# ── After running the notebook ────────────────────────────────────
+git status
+git add .
+git commit -m "feat(ensemble): run all 5 strategies, best=<strategy> <acc>% acc"
+git push origin features/ensemble_model
+
+# ── Verify push ───────────────────────────────────────────────────
+git log --oneline -5
 ```
 
 ---
-
-### 🔹 Step 2: Train & Improve Model
-
-* Run the notebook
-* Results will be saved in `/experiments/`
-* (Important) Only keep the best/final experiment results and delete the rest
-
----
-
-### 🔹 Step 3: Create your own README
-
-Inside your branch, add:
-
-```
-repo/
-│
-├── model.ipynb
-├── README.md
-├── experiments/              
-│   └── exp_datetime/ (Best Version)
-│       ├── metrics.json
-│       ├── config.json
-```
-
-Your README should include:
-
-* **Model used**
-* **Changes made**
-* **Final performance**
-* **Key insights**
-
----
-
-### 🔹 Step 4: Open Pull Request (PR)
-
-* Push branch
-* Open PR → `main`
-* Include:
-
-  * Model name
-  * Metrics
-  * Improvements
-
----
-
-## 8. All Experiment Logs Repository Strategy
-
-We will follow a structure similar to **OpenAI parameter-golf style** (https://github.com/openai/parameter-golf):
-
----
-
-### 📁 Records Folder (All Experiments)
-
-```
-records/
-│
-├── 2026-04-10_convnext_{strategy}/
-├── 2026-04-12_efficientnet_{strategy}/
-```
-
-👉 Each PR adds a new experiment folder. This allows us to record and view all past experiments and discuss together the strategy.
-
-
-## 🏆 9. Model Performance Leaderboard 
-| No | Author   | Model              | Strategy Summary                                           | Accuracy | Recall | Date   |
-|----|----------|--------------------|------------------------------------------------------------|:--------:|:------:|--------|
-| 1. | Aloysius | Vision Transformer | Baseline (Vanila ViT + No Augmentation + Train_Test_Split) |  74.19%  | 58.78% | 4/4/26 |
-
-# 🚀 Let's Win This Competition
-
-Focus on:
-
-* Improving Recall, Accuracy and F1 score
-* Reducing class imbalance errors
-* Experimenting smartly
-
----
-
-Good luck — and build something powerful 💪
