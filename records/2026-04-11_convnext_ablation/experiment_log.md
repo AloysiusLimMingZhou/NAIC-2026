@@ -631,3 +631,55 @@
 - Class 3 (Severe): 6/44 (13.6%) — slightly lower than Exp 7 (7/44)
 - Class 4 (Proliferative): 57/114 (50.0%) — significant regression from Exp 7 (72/114, 63.2%)
 - **Conclusion:** Gradient accumulation with default LR hurts. Would need LR scaling (×2) to compensate. Skip for now.
+
+---
+
+## Experiment 15 — CE + MixUp + ECA + SGD+Nesterov (vs AdamW)
+
+**Date:** 2026-05-09
+**Loss:** CrossEntropyLoss
+**Feature Flags:** use_mixup=True, use_eca=True, all others False
+**Change vs Exp 7:** Replaced AdamW with SGD(lr=1e-3, momentum=0.9, nesterov=True). Local macOS run (num_workers=0, pin_memory=False)
+
+| Metric    | Score  |
+|-----------|--------|
+| Accuracy  | 62.85% |
+| Precision | 69.18% |
+| Recall    | 48.59% |
+| F1 Score  | 46.37% |
+| ROC-AUC   | 87.67% |
+
+**Per-Fold Training Behavior:**
+| Fold | Epochs | Train Acc (final) | Val Acc (best) |
+|------|--------|------------------|----------------|
+| 1    | 16     | ~57%             | ~67%           |
+| 2    | 16     | ~57%             | ~56%           |
+| 3    | 18     | ~57%             | ~58%           |
+| 4    | 23     | ~59%             | ~61%           |
+| 5    | 19     | ~58%             | ~57%           |
+
+**Confusion Matrix (Test Ensemble + TTA):**
+```
+[[380  62   6   0   0]
+ [ 18  78   9   0   0]
+ [ 19 124 120   0  14]
+ [  0  10  28   2   4]
+ [  4  35  34   0  41]]
+```
+
+**Notes:**
+- SGD **CATASTROPHIC** — worst result in entire ablation study
+  - Accuracy: -16.00% (78.85% → 62.85%)
+  - Precision: -10.11% (79.29% → 69.18%)
+  - Recall: -14.99% (63.58% → 48.59%)
+  - F1: -18.09% (64.46% → 46.37%)
+  - ROC-AUC: -6.11% (93.78% → 87.67%)
+- Class 0 (Healthy) badly overfitted: 380/448 (84.8%) correct but precision only 69% (many FP from other classes)
+- Class 2 (Moderate) collapsed: 120/277 (43.3%) recall — 124 misclassified as Class 1
+- Class 3 (Severe) essentially failed: 2/44 (4.5%) — worse than baseline
+- Class 4 (Proliferative) severely regressed: 41/114 (36%) vs 72/114 (63.2%) in Exp 7
+- Training loss plateaued early (epoch 6–10), val loss highly unstable across folds (spiking to 1.4–1.5)
+- SGD learning rate 1e-3 too aggressive for this model/task; momentum+nesterov couldn't stabilize convergence
+- Early stopping triggered early (ep 16–23) across all folds, indicating poor learning dynamics
+- **Root cause:** SGD with lr=1e-3 (tuned for batch=32) caused oscillations; no adaptive scaling like AdamW. Would need extensive LR tuning per fold.
+- **Conclusion:** SGD is fundamentally worse than AdamW for this task. Skip entirely. Exp 7 (AdamW+MixUp+ECA) remains definitive solo best.
