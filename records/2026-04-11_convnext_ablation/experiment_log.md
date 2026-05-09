@@ -533,3 +533,101 @@
 **9 techniques that HURT:** Focal Loss, Weighted CE, CBAM, Three-stage fine-tuning, Warmup, Discriminative LR, Resolution 384, Label Smoothing, Boundary Ordinal Loss
 
 **Next step:** Ensemble Exp 7 ConvNeXt (0.4) + Aloysius's EfficientNet-B3 (0.6)
+
+---
+
+## Experiment 12 — CE + MixUp + ECA + Dropout(0.3)
+
+**Date:** 2026-05-08
+**Loss:** CrossEntropyLoss
+**Feature Flags:** use_mixup=True, use_eca=True, all others False
+**Change vs Exp 7:** Added `nn.Dropout(p=0.3)` after ECA global avg pool, before classifier head
+
+| Metric    | Score  |
+|-----------|--------|
+| Accuracy  | 77.53% |
+| Precision | 78.79% |
+| Recall    | 61.11% |
+| F1 Score  | 60.84% |
+| ROC-AUC   | 93.68% |
+
+**Confusion Matrix:**
+```
+[[384  60   4   0   0]
+ [ 10  66  28   0   1]
+ [  6  25 241   0   5]
+ [  0   0  35   3   6]
+ [  0   4  38   0  72]]
+```
+
+**Notes:**
+- Dropout 0.3 **HURTS** — regresses across all metrics vs Exp 7 (verified on Kaggle: notebookb64761cbf4.ipynb)
+  - Accuracy: -1.32% (78.85% → 77.53%)
+  - Recall: -2.47% (63.58% → 61.11%)
+  - F1: -3.62% (64.46% → 60.84%)
+  - ROC-AUC: -0.10% (93.78% → 93.68%)
+  - Precision: -0.50% (79.29% → 78.79%)
+- Class 2 (Moderate) improved: 229/277 → 241/277 (87.0%) — dropout helped boundary generalisation here
+- Class 3 (Severe): 3/44 (6.8%) — regressed from 7/44 (15.9%) in Exp 7
+- Class 0 improved: 364→384 (85.7% vs 89.5% Exp 7 — still worse)
+- Val loss spiked during training (1.5–2.5) indicating miscalibration, hurting softmax ensemble averaging
+- Root cause: dropout=0.3 with MixUp+weight_decay=0.01 already regularizing → triple regularization is too much
+
+---
+
+## Experiment 13 — CE + MixUp + ECA + Dropout(0.1)
+
+**Date:** 2026-05-08
+**Loss:** CrossEntropyLoss
+**Feature Flags:** use_mixup=True, use_eca=True, all others False
+**Change vs Exp 12:** Reduced dropout from 0.3 → 0.1 (lighter regularization)
+
+---
+
+## Experiment 14 — CE + MixUp + ECA + Gradient Accumulation (effective batch 64)
+
+**Date:** 2026-05-09
+**Loss:** CrossEntropyLoss
+**Feature Flags:** use_mixup=True, use_eca=True, all others False
+**Change vs Exp 7:** Added gradient accumulation (ACCUMULATION_STEPS=2), effective batch size 32×2=64. dropout_rate=0.0
+
+| Metric    | Score  |
+|-----------|--------|
+| Accuracy  | 77.02% |
+| Precision | 73.49% |
+| Recall    | 60.08% |
+| F1 Score  | 61.02% |
+| ROC-AUC   | 93.32% |
+
+**Per-Fold Validation F1:**
+| Fold | Acc    | Recall | F1     | ROC-AUC |
+|------|--------|--------|--------|---------|
+| 1    | 72.82% | 52.39% | 52.05% | 86.93%  |
+| 2    | 69.11% | 52.74% | 51.99% | 88.61%  |
+| 3    | 63.67% | 49.04% | 47.15% | 86.58%  |
+| 4    | 64.43% | 48.16% | 48.27% | 82.78%  |
+| 5    | 63.29% | 53.12% | 51.64% | 87.14%  |
+
+**Confusion Matrix (Test Ensemble + TTA):**
+```
+[[398  50   0   0   0]
+ [  5  67  31   0   2]
+ [  8  30 233   0   6]
+ [  0   0  36   6   2]
+ [  0   6  49   2  57]]
+```
+
+**Notes:**
+- Gradient accumulation **HURTS** — regresses across all metrics vs Exp 7
+  - Accuracy: -1.83% (78.85% → 77.02%)
+  - Precision: -5.80% (79.29% → 73.49%)
+  - Recall: -3.50% (63.58% → 60.08%)
+  - F1: -3.44% (64.46% → 61.02%)
+  - ROC-AUC: -0.46% (93.78% → 93.32%)
+- Early stopping hit early across all folds (ep 10–16), consistent with underfitting
+- Validation F1 per fold very low (47–52%) vs training suggesting high variance
+- Larger effective batch (64) flattens gradients — loss landscape too smooth, optimizer overshoots
+- Accumulation doubles steps-per-update but halves update frequency; with LR=1e-4 tuned for batch=32, this is effectively too high per effective batch
+- Class 3 (Severe): 6/44 (13.6%) — slightly lower than Exp 7 (7/44)
+- Class 4 (Proliferative): 57/114 (50.0%) — significant regression from Exp 7 (72/114, 63.2%)
+- **Conclusion:** Gradient accumulation with default LR hurts. Would need LR scaling (×2) to compensate. Skip for now.
