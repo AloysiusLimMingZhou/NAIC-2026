@@ -10,7 +10,7 @@
         "epochs": 30,
         "batch_size": 32,
         "optimizer": "AdamW",
-        "scheduler": "LinearWarmup+CosineAnnealing",
+        "scheduler": "CosineAnnealing",
         "loss": "CrossEntropyLoss+MixUp+ECA",
         "focal_gamma": 2.0,
         "focal_weight": 0.7,
